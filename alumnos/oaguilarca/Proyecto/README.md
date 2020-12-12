@@ -1,4 +1,4 @@
-# Proyecto 1 Análisis Aplicado
+# Proyecto Análisis Aplicado
 Este es un proyecto escrito en Julia. Para poder correrlo hay que seguir las siguientes instrucciones:
 1. Correr en la terminal `julia`
   * Se recomienda empezar usando `julia --threads 2` o algún otro número en lugar de `2`. Este programa utiliza varios threads. Mientras más se utilicen, mayor será la velocidad. Esto está acotado por el tamaño de la matriz más grande.
@@ -37,23 +37,26 @@ f(5;y=1) #Regresa 6
 f(5; y=7) #Regresa 12
 ```
 ## Documentación
-### is_pos_semi_def
+
+### Funciones necesarias de álgebra lineal
+
+#### is_pos_semi_def
 Esta función recibe un arreglo bidimensional de `Float64` y regresa un Booleano que es `true` si la matriz es semidefinida positiva y `false` si no lo es.
-#### Ejemplo:
+##### Ejemplo:
 ```
 julia> is_pos_semi_def([1.0 0 0; 0 1 0; 0 0 1])
 true
 ```
-### is_pos_def
+#### is_pos_def
 Esta función recibe un arreglo bidimensional de `Float64` y regresa un Booleano que es `true` si la matriz es definida positiva y `false` si no lo es.
-#### Ejemplo:
+##### Ejemplo:
 ```
 julia> is_pos_def([1.0 0 0; 0 1 0; 0 0 1])
 true
 ```
-### grad
+#### grad
 Esta función recibe una función, un arreglo numérico de una dimensión y, opcionalmente, una `h` con valor default `1e-20`. Regresa un arreglo de `Float64` de una dimensión. Para calcularla, se usa un paso complejo, lo que limita las funciones utilizables a todas las funciones que utilizan valores absolutos pero, como ventaja, aumentan significativamente la precisión. El método está basado en [este paper](https://www.researchgate.net/publication/222112601_The_Complex-Step_Derivative_Approximation).
-#### Ejemplo:
+##### Ejemplo:
 ```
 julia> f(x)=x[1]*x[2]
 f (generic function with 1 method)
@@ -63,9 +66,24 @@ julia> grad(f, [1,3]; h=1e-10)
  3.0
  1.0
 ```
-### hess
+
+#### derivative
+Esta función recibe una función, un arreglo numérico de una dimensión y, opcionalmente, una `h` con valor default `1e-20`. Regresa la parte imaginaria de la funcion con paso complejo.
+
+##### Ejemplo:
+```
+julia> f(x)=x[1]*x[2]
+f (generic function with 1 method)
+
+julia> derivative(f, [1,3]; h=1e-20)
+2-element Array{Float64,1}:
+ 0.0
+ 0.0
+```
+
+#### hess
 Esta función recibe una función, un arreglo numérico de una dimensión y, opcionalmente, una `h` con valor default `1e-7`. Regresa un arreglo de `Float64` de 2 dimensiones. Se calcula a través de un paso complejo y diferencia centrada, lo que limita las funciones utilizables a todas las funciones que utilizan valores absolutos pero, como ventaja, aumenta significativamente la precisión. El metodo esta basado en [este programa en Matlab](https://www.mathworks.com/matlabcentral/fileexchange/18177-complex-step-hessian).
-#### Ejemplo:
+##### Ejemplo:
 ```
 julia> f(x)=(x[1]^2)*(x[2]^2)
 f (generic function with 1 method)
@@ -75,9 +93,9 @@ julia> hess(f, [1,3]; h=1e-5)
  18.0  12.0
  12.0   2.0
 ```
-### check_optimality
+#### check_optimality
 Esta función recibe un gradiente, una hessiana y, opcionalmente, recibe una tolerancia `tol` con valor default `1e-20`. Regresa un booleano que es `true` si es óptimo y `false` si no lo es.
-#### Ejemplo:
+##### Ejemplo:
 ```
 julia> f(x)=x[1]^2+x[2]^2
 f (generic function with 1 method)
@@ -90,15 +108,15 @@ julia> x=[0.0, 0]
 julia> check_optimality(grad(f,x),hess(f,x);tol=0.0)
 true
 ```
-### backtracking_line_search
+#### backtracking_line_search
 Es el algoritmo 3.1 del Nocedal.  Recibe una función, un arreglo numérico, otro arreglo numérico y, opcionalmente, recibe tres variables `Float64`: una `a` con valor default `1`, una `c` con valor default `1e-4` y una `p` (rho) con valor default `0.5`. Regresa un `Float64`.
 
-### add_identity
+#### add_identity
 Busca iterativamente un número `t` tal que la matriz A+I*t sea definida positiva y regresa la matriz A+I*t. Recibe una matriz de `Float64` y, opcionalmente, un `Float64` `b` con default `1e-4`. Regresa una matriz definida positiva.
 
-### line_search_newton_modification
+#### line_search_newton_modification
 Es el algoritmo 3.2 del Nocedal. Recibe una función, un punto inicial y, opcionalmente, recibe una tolerancia `tol` con valor default `1e-4` y un máximo de iteraciones `maxit` con valor default `10000`. Regresa las coordenadas de la mejor aproximación que se logró e imprime el número de iteraciones.
-#### Ejemplo
+##### Ejemplo
 ```
 julia> f(x)=x[1]^2+x[2]^2
 f (generic function with 1 method)
@@ -114,31 +132,120 @@ Numero de iteraciones:    4
  0.0
  0.0
 ```
-### rosenbrock
+#### rosenbrock
 Es la función de Rosenbrock. Recibe un arreglo numérico y, opcionalmente, números: `a` con valor default `1` y `b`. Regresa el resultado de la función de Rosenbrock.
-#### Ejemplo
+##### Ejemplo
 ```
 julia> rosenbrock([1,2]; a=2, b=200)
 201
 ```
-### min_rosenbrock
-Esta función sirve para demostrar el funcionamiento del código. Recibe un punto inicial, un valor de a, un valor de b y, opcionalmente, recibe una tolerancia `tol` con valor default `1e-10` y un máximo de iteraciones `maxit` con valor default `10000`. Imprime un reporte con el resultado exacto, el número de iteraciones, el resultado obtenido y los errores absolutos y relativos en x & y.
-#### Ejemplo
-```
-julia> min_rosenbrock([rand(1:10),rand(1:100)], rand(1:10), rand(1:1000); tol=0.0, maxit=10000)
-El minimo real es:        f([2,4])=0
-Numero de iteraciones:    10000
-El minimo que se encontro es:    f([2.000000000000077,4.000000000000307])=5.9024545080899156e-27
+### Declaracion de tipos de descenso
+
+#### BFGS
+Se realiza una estructura con el método de Broyden–Fletcher–Goldfarb–Shanno. Se recibe `Q` y `c1`, `c2` y `p` (rho) valores para las condiciones de Wolfe.
+
+##### init!
+Función que inicializa a `D` para el método a partir de Q. Recibe `D`, `x` y el gradiente de f `gf`. Regresa `D`
+
+##### step!
+Función que calcula el paso para el método de BFGS. Recibe `D`, `f`, el gradiente de f, `x`, el gradiente de `f` evaluado en `x` y la hessiana ´hx´. Regresa el valor de `x` en el siguiente paso `xk` y su valor `gk`.
+
+##### Ejemplo
+
+#### Metodo de Newton
+Se realiza una estructura con el método de Newton.
+
+##### init!
+Función que inicializa a D para el método a partir de Q. Recibe `D`, `x` y el gradiente de f `gf`. Regresa `D`
+
+##### step!
+Función que calcula el paso para el método de BFGS. Recibe `D`, `f`, el gradiente de f, `x`, el gradiente de `x` y la matriz Hessiana `Hx`. Regresa el valor de `x` en el siguiente paso `xk` y su valor `gk`.
+
+##### Ejemplo 
+
+#### Metodo de Newton con modificacion a la Hessiana
+Se realiza una estructura con el método de Newton con modificación a la Hessiana donde recibe el valor del parámetro `a`.
+
+##### init!
+Función que inicializa a `D` para el método a partir de `Q`. Recibe `D`, `x` y el gradiente de f `gf`. Regresa `D.`
+
+##### step!
+Función que calcula el paso para el método de BFGS. Recibe `D`, `f`, el gradiente de f, `x`, el gradiente de `f` evaluado en `x` y la matriz Hessiana `Hx`. Regresa el valor de `x` en el siguiente paso `xk` y su valor `gk`.
+
+##### Ejemplo 
+
+#### Line Search
+Se realiza una estructura con el método de Newton.
+
+##### init!
+Función que inicializa a `D` para el método a partir de `Q`. Recibe `D`, `x` y el gradiente de `f`: `gf`. Regresa `D`
+
+##### step!
+Función que calcula el paso para el método de BFGS. Recibe `D`, `f`, el gradiente de `f`, `x`, el gradiente de `f` evaluado en `x` y la matriz Hessiana `Hx`. Regresa el valor de `x` en el siguiente paso `xk` y su valor `gk`.
+
+##### interpolate
+Función que interpola. Recibe los puntos `a1`, `a2` y la función `f`. Regresa un punto entre `a1` y `a2`.
+
+##### zoom
+Función que calcula la `ak` óptima para el método. Recibe los puntos `al`, `ah`, la funcion `f`, y valores para `c1` y `c2`. Regresa el valor de `a` = `ak` que se usará.
+
+##### minimize
+Función que minimiza la alpha. Recibe la funcion `f`, los valores `c1`, `c2` y `p` inicializados en `1e-3`, `0.9` y `2` respectivamente. Regresa la alpha minimizada.
+
+##### line_step_size
+Funcion que calcula el tamaño del paso para el método de line search. Recibe la función `f`, `x` & `d`. Regresa `x` más el tamaño del paso.
+
+##### Ejemplo 
+
+#### Funcion general de descenso
+Funcion que calcula en general el descenso y genera banderas para saber si encontró o no la solución óptima. Regresa el valor de `x` & el numero de pasos.
+
+##### Ejemplo 
+
+### Funciones para optimizar
+
+#### revisar
+Esta función sirve para demostrar el funcionamiento del código usando la función de Rosenbrock. Recibe un punto inicial, un valor de `a`, un valor de `b`, el método a utilizar y, opcionalmente, recibe una tolerancia `tol` con valor default `1e-10` y un máximo de iteraciones `maxit` con valor default `10000`. Imprime un reporte con el resultado exacto, el número de iteraciones, el resultado obtenido y los errores absolutos y relativos en x & y.
+
+##### Ejemplo
 
 
-El error absoluto en x es:    7.682743330406083e-14
-El error relativo en x es:    3.8413716652030416e-14
+### Función de las cámaras
 
-El error absoluto en y es:    3.0730973321624333e-13
-El error relativo en y es:    7.682743330406083e-14
-```
+#### costo_camara
+Esta función es la función de costo que calcula la distancia del punto de la localización de las cámaras al punto del delito. Recibe las coordenadas latitud `lat`y longitud `lon` de donde se pondrían las cámaras, `x0`, los datos descargados de las coordenadas de los delitos cometidos `df` y un valor para `j`. 
 
-## Integrantes
+#### costo_est
+Esta función es la función de costo estimado para un número fijo de 20 cámaras. Recibe `x0` y los datos descargados de las coordenadas de los delitos cometidos. Imprime un reporte con los  
+
+#### costo
+Esta función es la función de costo estimado. Recibe `x0` y los datos descargados de las coordenadas de los delitos cometidos. Imprime un reporte con los  
+
+#### rand_geo_array
+Esta función genera un intervalo aleatorio de dimensión 1. Recibe los valores `mina` y `maxa` los valores mínimos y máximos de latitud, `mino` y `maxo` los valores máximos de longitud y un valor para `s`. Regresa un intervalo aleatorio dentro de la región donde se encuentran los datos.
+
+
+#### mejores_camaras
+Esta función es la función de 
+
+##### Ejemplo
+
+#### proyecto_final
+Se define una estructura con las siguientes variables necesarias:
+`f`: la funcion a minimizar
+`gf`: la derivada de f
+`x0`: el valoralor inicial
+`tol`: la tolerancia
+`maxit`: el maximo numero de iteraciones
+`met`: el metodo que se va a usar para minimizar
+`res`: el valor minimizado
+`pasos`: el número de puntos por los que paso el algoritmo
+Y el contructor sería la funcion que calcula según el método indicado y usa las variables anteriores y las condiciones de Wolfe `c1`, `c2` y `p` inicializadas en `1e-2`, `0.9` y `2` respectivamente. Regresa la respuesta según el método utilizado usando la función de descenso correspondiente.
+
+
+##### Ejemplo
+
+### Integrantes
 * Dan Jinich
 * María José Sedano
 * Oscar Aguilar

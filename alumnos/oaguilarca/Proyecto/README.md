@@ -1,8 +1,14 @@
 # Proyecto Análisis Aplicado
-Este es un proyecto escrito en Julia. Para poder correrlo hay que seguir las siguientes instrucciones:
+El proyecto final está escrito en Julia. A continuación se explicarán conceptos básicos de este lenguaje. Posteriormente se explican las funciones de álgebra lineal que utilizamos. Luego vienen las funciones de los 4 métodos: BFGS, Newton, Newton con modificación a la Hessiana y Line Search. Por último se exploran sus usos tanto con la función de Rosenbrock, como con la función propuesta para resolver el problema de las cámaras de seguridad. 
+
+En julia no existen clases pero si structs (muy parecidas a las de c). Usamos structs normales y mutables para crear un “paquete” que podamos llamar desde otros archivos y aprovechar sus métodos de manera eficiente. 
+
+Nuestro código está estructurado de la siguiente forma: se definió una struct general llamada proyecto_final para manejar structs mutables contenidas dentro de ella. Esto nos permite llamar a la struct general con el archivo precompilado y usar los métodos de las structs mutables
+
+Para poder correrlo hay que seguir las siguientes instrucciones:
 1. Correr en la terminal `julia`
-  * Se recomienda empezar usando `julia --threads 2` o algún otro número en lugar de `2`. Este programa utiliza varios threads. Mientras más se utilicen, mayor será la velocidad. Esto está acotado por el tamaño de la matriz más grande.
-2. Dentro de Julia, correr en la terminal: `include("path/to/Proyecto1.jl")`, utilizado el path al proyecto.
+  * Se recomienda empezar usando `julia --threads 2` o algún otro número en lugar de `2`. Este programa utiliza varios threads. Mientras más se utilicen, mayor será la velocidad. Esto está acotado por el tamaño de la matriz más grande. Esta es una de las razones y ventajas por las cuales preferimos usar este lenguaje.
+2. Dentro de Julia, correr en la terminal: `include("path/to/ProyectoFinal.jl")`, utilizado el path al proyecto.
 ## Guía básica de Julia
 Julia como lenguaje de programación es relativamente sencillo con sintaxis similar a lenguajes como Python, R y Matlab. Una guía de sus diferencias básicas donde están presentadas algunas de las características del lenguaje importantes para este proyecto se pueden ver [aqui](https://docs.julialang.org/en/v1/manual/noteworthy-differences/). Aquí están presentadas algunas de las 
 ### Tipos
@@ -304,8 +310,6 @@ Esta función genera un intervalo aleatorio de dimensión 1. Recibe los valores 
 ### mejores_camaras
 Esta función es la función de 
 
-#### Ejemplo
-
 ### proyecto_final
 Se define una estructura con las siguientes variables necesarias:
 `f`: la funcion a minimizar
@@ -319,7 +323,55 @@ Se define una estructura con las siguientes variables necesarias:
 Y el contructor sería la funcion que calcula según el método indicado y usa las variables anteriores y las condiciones de Wolfe `c1`, `c2` y `p` inicializadas en `1e-2`, `0.9` y `2` respectivamente. Regresa la respuesta según el método utilizado usando la función de descenso correspondiente.
 
 
-#### Ejemplo
+## Resultados Finales
+Para mostrar los resultados finales, se adjuntan las imágenes con los distintos valores con los que acotamos el problema, ya sea por número de cámaras, crímenes o ambos.
+
+### Prueba inicial
+Para la prueba incial se usó el algoritmo para 10 cámaras tomando como datos 200 crímenes y se obtuvo lo siguiente:
+
+![AMI](ResSinMin.jpeg)
+
+Donde el ambiente de ejecución se muestra como sigue:
+
+![AMI](AmbienteEjecucion.jpeg)
+
+No obstante, notamos que no tiene mucho sentido que estén las cámaras muy juntas, por lo que se determinó una distancia mínima entre las cámaras de la siguiente forma:
+
+```
+for j in 1:m
+   for i in 1:m
+      if i!=j
+         c = ((x[j]-x[i])^2+(x[j+m]-x[i+m]^2)
+         if real(c) < 1e-16
+            res += 1000
+         else
+            res += 1/real(c)
+         end
+      end
+   end
+end
+```
+
+Una vez usada la cota, se muestran los siguientes ejemplos:
+
+### 10 cámaras tomando datos de 100 crímenes
+
+![AMI](ResAlgA10-100.jpeg)
+
+### 10 cámaras tomando datos de 200 crímenes
+
+![AMI](ResAlgA10-200.jpeg)
+
+### 4 cámaras tomando datos de 400 crímenes
+
+![AMI](ResAlgA4-400.jpeg)
+
+### 10 cámaras tomando datos de 400 crímenes
+
+En un primer intento, notamos que las cámaras se iban a las afueras de la zona delimitada de los crímenes por lo que se ajustó la cota mínima en la función de costo para mejorar la optimización de la localización de las cámaras para que se situaran dentro de la región y no se perdiera mucho tiempo en correr el algoritmo. Con dicha modificación se obtuvo lo siguiente:
+
+![AMI](ResAlgB10-400.jpeg)
+
 
 ### Integrantes
 * Dan Jinich
